@@ -1,6 +1,6 @@
 function ES_demographicCollapseUSSR(varargin)
 % This function carries out demographic analysis of Eastern and Western
-% Blocs after the collapse of the USSR.
+% Blocs with respect to the collapse of the USSR.
 % 
 % Data it uses is obtained from the World Bank Open Data (see:
 % https://data.worldbank.org/)
@@ -10,6 +10,17 @@ function ES_demographicCollapseUSSR(varargin)
 % Note: This set of functions use scripts written by Bernhard Englitz
 % see: https://bitbucket.org/benglitz/controller-dnp/ 
 
+% Input the path as ES_demographicCollapseUSSR('Path', 'PATHTO_COLLAPSEUSSR')
+cInd = find(contains(varargin,'Path'));
+cPath = varargin{cInd+1};
+% Add the necessary directories to path
+addpath(cPath);
+addpath([cPath,filesep,'Data']);
+addpath([cPath,filesep,'Functions']);
+addpath([cPath,filesep,'Functions',filesep,'Dependencies']);
+addpath([cPath,filesep,'Results']);
+
+% DEFAULT PARAMETERS
 P = parsePairs(varargin);
 checkField(P,'Path',[]); % Path of the CollapseUSSR package
 checkField(P,'Region','Eastern'); % Can also be 'Western'
@@ -19,7 +30,7 @@ checkField(P,'Normalize','Divisive'); % Can also be 'Subtractive'
 
 
 if isempty(P.Path)
-  error('Please indicate where the package is located.');
+  error('Please indicate where the package is located.'); 
 end
 cd(P.Path);
 
