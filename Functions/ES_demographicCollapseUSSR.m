@@ -1,4 +1,4 @@
-function ES_demographicCollapseUSSR(varargin)
+function L = ES_demographicCollapseUSSR(varargin)
 % This function carries out demographic analysis of Eastern and Western
 % Blocs with respect to the collapse of the USSR.
 % 
@@ -11,26 +11,27 @@ function ES_demographicCollapseUSSR(varargin)
 % see: https://bitbucket.org/benglitz/controller-dnp/ 
 
 % Input the path as ES_demographicCollapseUSSR('Path', 'PATHTO_COLLAPSEUSSR')
-cInd = find(contains(varargin,'Path'));
-cPath = varargin{cInd+1};
-% Add the necessary directories to path
-addpath(cPath);
-addpath([cPath,filesep,'Data']);
-addpath([cPath,filesep,'Functions']);
-addpath([cPath,filesep,'Functions',filesep,'Dependencies']);
-addpath([cPath,filesep,'Results']);
+
+
 
 % DEFAULT PARAMETERS
 P = parsePairs(varargin);
 checkField(P,'Path',[]); % Path of the CollapseUSSR package
 checkField(P,'Region','Eastern'); % Can also be 'Western'
-checkField(P,'Exclude', {'Uzbekistan','Tajikistan','Azerbaijan','Turkmenistan','Kyrgyz Republic'}); % Exclude some countries from the analysis
-checkField(P,'Plot',1); % Plot the time series
+checkField(P,'Exclude', []); %{'Uzbekistan','Tajikistan','Azerbaijan','Turkmenistan','Kyrgyz Republic'}); % Exclude some countries from the analysis
+checkField(P,'Plot',0); % Plot the time series
 checkField(P,'Normalize','Divisive'); % Can also be 'Subtractive'
 
-
 if isempty(P.Path)
-  error('Please indicate where the package is located.'); 
+  error('Please indicate where the package is located.');
+else
+  % Add the necessary directories to path
+  cPath = P.Path;
+  addpath(cPath);
+  addpath([cPath,filesep,'Data']);
+  addpath([cPath,filesep,'Functions']);
+  addpath([cPath,filesep,'Functions',filesep,'Dependencies']);
+  addpath([cPath,filesep,'Results']);
 end
 cd(P.Path);
 
@@ -62,8 +63,7 @@ if ~isempty(P.Exclude)
   R(RemInd,:) = [];
 end
 
-if P.Plot
-  figure(121231); clf;
+
   % Loop through the countries and plot the individually
   for iC = 1:length(CountryNames)
     switch P.Normalize
@@ -72,30 +72,16 @@ if P.Plot
       case 'Subtractive'
             Norm2Beginning(iC,:) = R(iC,:) - R(iC,cInd); % divisive normalization relative to year 1991
     end
-    
-    pl(iC) = plot(Year,Norm2Beginning(iC,:)); hold on
-    pl(iC).DataTipTemplate.DataTipRows(1).Label = 'Year';
-    pl(iC).DataTipTemplate.DataTipRows(2).Label = 'Population';
-    row = dataTipTextRow('Country',repmat(CountryNames(iC),length(Norm2Beginning(iC,:)),1));
-    pl(iC).DataTipTemplate.DataTipRows(end+1) = row;
-    maxVal(iC) = max(Norm2Beginning(iC,:));
-    minVal(iC) = min(Norm2Beginning(iC,:));
-    text(Year(end) +1, Norm2Beginning(iC,end),CountryNames{iC});
   end
   
-  % Add labels and other informative elements to the figure
-  xlabel('Years');
-  ylabel('Population (normalized to the level at 1991)');
-  cInd = Year==1991;
-  yMax = max(maxVal);
-  yMin = min(minVal);
-  line([Year(cInd),Year(cInd)],[yMin,yMax],'Color','r')
-  text(Year(cInd)+1,yMax,'Fall of the Soviet Union');
-  line(Year,ones(length(Year),1),'Color','r','LineWidth',2);
-  title([P.Region,' Europe - Before and After the Fall of the USSR']);
   
-  % Estimate the average and plot
-  Average = mean(Norm2Beginning,1);
-  plot(Year,Average,'k','LineWidth',2);
-  
-end
+  % Prepare the output
+  L.Norm2Beginning = Norm2Beginning;
+  L.Year = Year;
+  L.CountryNames = CountryNames;
+  L.Region = P.Region;
+
+  if P.Plot
+    ES_plotDemographicCollapseUSSR(L,'Region',P.Region);
+  end
+ 
